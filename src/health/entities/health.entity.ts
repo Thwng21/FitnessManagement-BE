@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Unique } from 'typeorm';
 
 @Entity()
+@Unique(['userId', 'date'])
 export class Health {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -8,7 +9,7 @@ export class Health {
   @Column({ type: 'uuid', nullable: true })
   userId: string;
 
-  @Column({ type: 'date', unique: false })
+  @Column({ type: 'date' })
   date: string; // ISO string 'YYYY-MM-DD'
 
   // Body Metrics

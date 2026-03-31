@@ -8,7 +8,12 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() userData: any) {
-    return this.authService.register(userData);
+    try {
+      return await this.authService.register(userData);
+    } catch (error: any) {
+      console.error('Error during register:', error);
+      throw error;
+    }
   }
 
   @Post('login')

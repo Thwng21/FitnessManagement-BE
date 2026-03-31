@@ -12,21 +12,26 @@ export class UsersService {
   ) {}
 
   async create(userData: Partial<User>): Promise<User> {
-    if (!userData.email) {
-      throw new Error('Email is required');
-    }
-    const existingUser = await this.findByEmail(userData.email);
-    if (existingUser) {
-      throw new ConflictException('Email đã tồn tại');
-    }
+    try {
+      if (!userData.email) {
+        throw new Error('Email is required');
+      }
+      const existingUser = await this.findByEmail(userData.email);
+      if (existingUser) {
+        throw new ConflictException('Email đã tồn tại');
+      }
 
-    const hashedPassword = await bcrypt.hash(userData.password || '', 10);
-    const user = this.usersRepository.create({
-      ...userData,
-      password: hashedPassword,
-    });
+      const hashedPassword = await bcrypt.hash(userData.password || '', 10);
+      const user = this.usersRepository.create({
+        ...userData,
+        password: hashedPassword,
+      });
 
-    return this.usersRepository.save(user);
+      return await this.usersRepository.save(user);
+    } catch (error) {
+      console.error('Lỗi khi lưu User vào DB:', error);
+      throw error;
+    }
   }
 
   async findByEmail(email: string): Promise<User | null> {

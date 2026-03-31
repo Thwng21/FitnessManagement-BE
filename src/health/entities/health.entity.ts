@@ -5,7 +5,10 @@ export class Health {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'date', unique: true })
+  @Column({ type: 'uuid', nullable: true })
+  userId: string;
+
+  @Column({ type: 'date', unique: false })
   date: string; // ISO string 'YYYY-MM-DD'
 
   // Body Metrics

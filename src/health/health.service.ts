@@ -10,27 +10,30 @@ export class HealthService {
     private healthRepository: Repository<Health>,
   ) {}
 
-  async findByDate(date: string): Promise<Health | null> {
-    return this.healthRepository.findOne({ where: { date } });
+  async findByDate(userId: string, date: string): Promise<Health | null> {
+    if (!userId) return null;
+    return this.healthRepository.findOne({ where: { userId, date } });
   }
 
-  async upsert(dto: Partial<Health>): Promise<Health> {
+  async findAll(userId: string): Promise<Health[]> {
+    if (!userId) return [];
+    return this.healthRepository.find({ where: { userId }, order: { date: 'ASC' } });
+  }
+
+  async upsert(userId: string, dto: Partial<Health>): Promise<Health> {
+    if (!userId) throw new Error('Không xác định được danh tính người dùng. Vui lòng đăng nhập lại!');
     const { date, ...data } = dto;
     if (!date) throw new Error('Date is required');
 
-    let health = await this.findByDate(date);
+    let health = await this.findByDate(userId, date);
 
     if (health) {
       // Cập nhật các trường được gửi lên
       Object.assign(health, data);
     } else {
-      health = this.healthRepository.create(dto);
+      health = this.healthRepository.create({ ...dto, userId });
     }
 
     return this.healthRepository.save(health);
-  }
-
-  async findAll(): Promise<Health[]> {
-    return this.healthRepository.find({ order: { date: 'ASC' } });
   }
 }

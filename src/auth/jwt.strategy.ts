@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
@@ -14,6 +14,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    return { id: payload.sub, email: payload.email };
+    const userId = payload.sub || payload.id || payload.userId;
+    if (!userId) {
+      throw new UnauthorizedException('Phiên đăng nhập đã cũ hoặc lỗi. Vui lòng đăng xuất và đăng nhập lại!');
+    }
+    return { id: userId, email: payload.email };
   }
 }

@@ -21,12 +21,14 @@ export class PhotosService {
   }
 
   async uploadPhoto(
+    userId: string,
     base64Data: string,
     date: string,
     time: string,
     note?: string,
     weight?: number,
   ): Promise<Photo> {
+    if (!userId) throw new Error('Không xác định được danh tính người dùng. Vui lòng đăng nhập lại!');
     const bucket = this.configService.get<string>('SUPABASE_BUCKET') || 'gym-photos';
     
     // 1. Decode base64 to buffer
@@ -57,6 +59,7 @@ export class PhotosService {
 
     // 4. Save metadata to Postgres
     const photo = this.photosRepository.create({
+      userId,
       url: publicUrl,
       date,
       time,
@@ -67,7 +70,7 @@ export class PhotosService {
     return this.photosRepository.save(photo);
   }
 
-  async uploadVideo(base64Data: string): Promise<{ url: string }> {
+  async uploadVideo(userId: string, base64Data: string): Promise<{ url: string }> {
     const bucket = this.configService.get<string>('SUPABASE_BUCKET') || 'gym-photos';
     
     // 1. Extract base64 content and MIME type
@@ -103,25 +106,28 @@ export class PhotosService {
     return { url: publicUrl };
   }
 
-  async findAllByDate(date: string): Promise<Photo[]> {
+  async findAllByDate(userId: string, date: string): Promise<Photo[]> {
+    if (!userId) return [];
     return this.photosRepository.find({
-      where: { date },
+      where: { userId, date },
       order: { time: 'ASC' },
     });
   }
 
-  async findAll(): Promise<Photo[]> {
+  async findAll(userId: string): Promise<Photo[]> {
+    if (!userId) return [];
     return this.photosRepository.find({
+      where: { userId },
       order: { date: 'DESC', time: 'DESC' },
     });
   }
 
-  async remove(id: string): Promise<void> {
-    const photo = await this.photosRepository.findOne({ where: { id } });
+  async remove(userId: string, id: string): Promise<void> {
+    const photo = await this.photosRepository.findOne({ where: { userId, id } });
     if (!photo) return;
 
     // Optional: Delete from Supabase Storage too
     // Extract filename from URL... for now just delete from DB
-    await this.photosRepository.delete(id);
+    await this.photosRepository.delete({ userId, id });
   }
 }

@@ -9,9 +9,12 @@ async function bootstrap() {
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ limit: '50mb', extended: true }));
 
-  // Cho phép CORS để Frontend Next.js port 3000 ở g-fe có thể gọi tới
-  app.enableCors();
-  // Đổi cổng mặc định sang 5001 để không trùng với cổng 3000 của Next.js
+  // Cấu hình CORS chỉ cho phép FE trên Vercel truy cập
+  app.enableCors({
+    origin: 'https://gwouthfit.vercel.app',
+    credentials: true,
+  });
+  
   await app.listen(process.env.PORT ?? 5001);
 }
 bootstrap();

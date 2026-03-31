@@ -29,6 +29,7 @@ export class WorkoutsService {
   ) {}
 
   async findAll(userId: string): Promise<Workout[]> {
+    if (!userId) return [];
     return this.workoutsRepository.find({
       where: { userId, date: Not(IsNull()) },
       relations: ['exercises'],
@@ -37,6 +38,7 @@ export class WorkoutsService {
   }
 
   async findAllTemplates(userId: string): Promise<Workout[]> {
+    if (!userId) return [];
     return this.workoutsRepository.find({
       where: { userId, date: IsNull() },
       relations: ['exercises'],
@@ -45,6 +47,7 @@ export class WorkoutsService {
   }
 
   async findOneByDate(userId: string, date: string): Promise<Workout | null> {
+    if (!userId) return null;
     return this.workoutsRepository.findOne({
       where: { userId, date },
       relations: ['exercises'],
@@ -52,6 +55,7 @@ export class WorkoutsService {
   }
 
   async upsert(userId: string, dto: CreateWorkoutDto & { id?: string }): Promise<Workout> {
+    if (!userId) throw new Error('Không xác định được danh tính người dùng. Vui lòng đăng nhập lại!');
     const { date, title, exercises, id, status } = dto;
     
     return this.workoutsRepository.manager.transaction(async (manager) => {
@@ -101,9 +105,13 @@ export class WorkoutsService {
     });
   }
 
-  async toggleExercise(exerciseId: string, completed: boolean): Promise<Exercise> {
-    const exercise = await this.exercisesRepository.findOne({ where: { id: exerciseId } });
+  async toggleExercise(userId: string, exerciseId: string, completed: boolean): Promise<Exercise> {
+    const exercise = await this.exercisesRepository.findOne({ 
+      where: { id: exerciseId },
+      relations: ['workout'] 
+    });
     if (!exercise) throw new NotFoundException('Exercise not found');
+    if (exercise.workout.userId !== userId) throw new Error('KhÃ´ng cÃ³ quyá»n cáºp nháºt bÃ i táºp nÃ y');
     exercise.completed = completed;
     return this.exercisesRepository.save(exercise);
   }

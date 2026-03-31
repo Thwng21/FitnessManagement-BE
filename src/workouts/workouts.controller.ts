@@ -27,10 +27,11 @@ export class WorkoutsController {
 
   @Patch('exercise/:id')
   async toggleExercise(
+    @Req() req,
     @Param('id') id: string,
     @Body('completed') completed: boolean,
   ): Promise<any> {
-    return this.workoutsService.toggleExercise(id, completed);
+    return this.workoutsService.toggleExercise(req.user.id, id, completed);
   }
 
   @Delete(':id')

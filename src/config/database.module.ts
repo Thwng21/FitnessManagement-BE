@@ -29,11 +29,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
             rejectUnauthorized: false, // Bắt buộc cho Supabase/Render
           },
           extra: {
-            max: isProduction ? 5 : 10,
-            connectionTimeoutMillis: 10000,
-            idleTimeoutMillis: 30000,
+            max: isProduction ? 20 : 10,
+            connectionTimeoutMillis: 30000,       // Tăng thời gian chờ lên 30s để tránh bị timeout sớm
+            idleTimeoutMillis: 10000,             // Giảm xuống 10s để Pool tự đóng connection trước khi Render/Supabase ngắt
             allowExitOnIdle: true,
             keepAlive: true,
+            keepAliveInitialDelayMillis: 10000,   // Heartbeat mỗi 10s
             application_name: 'gym_backend',
           },
           poolSize: isProduction ? 5 : 10,

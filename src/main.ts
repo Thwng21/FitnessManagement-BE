@@ -1,6 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { json, urlencoded } from 'express';
+import * as dns from 'dns';
+
+// Fix lỗi timeout kết nối do Node 18+ mặc định dùng IPv6,
+// trong khi mạng của Render/Vercel (môi trường miễn phí) thường chỉ hỗ trợ IPv4 ra ngoài
+dns.setDefaultResultOrder('ipv4first');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
